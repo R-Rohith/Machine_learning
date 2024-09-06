@@ -20,3 +20,5 @@ Python has the following characteristics:
 		- List
 		- Tuple
 
+### String functions
+- **string.split()**: split a sting into words.
