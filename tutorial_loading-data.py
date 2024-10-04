@@ -1,48 +1,67 @@
-print('Hello World')
-a=10
-b='hi there'
-c='hey there!'
-print(b,a,c)
-print(b+c)
-#name=input("Who are you? ")
-#print(c,name)
-#age=int(input("How old are you? "))
-#print("Right, so you are",name+", age:",age,"\byrs")
-for i in range(1,101):
-	print(i,end=" ")
-	if(i%10==0):
-		print()
-# ividenn aan shab code--------------------------------------
-def wordify(number):
-	multipliers={1:'',100:'hundred',1000:'thousand',1000000:'million',1000000000:'billion',1000000000000:'trillion'}
-	sums={0:"",1:'one',2:'two',3:'three',4:'four',5:'five',6:'six',7:'seven',8:'eight',9:'nine',10:'ten',11:'eleven',12:'twelve',13:'thirteen',14:'fourteen',15:'fifteen',16:'sixteen',17:'seventeen',18:'eighteen',19:'nineteen',20:'twenty',30:'thirty',40:'fourty',50:'fifty',60:'sixty',70:'seventy',80:'eighty',90:'ninety'}
-	mult=1000000000000
-	quotient=number//mult
-	if quotient>0:
-		wordify(quotient)		#Incase the number is more than trillions
-		print(multipliers[mult])	#print trillion
-	while number>0:
-		mult/=1000
-		quotient=number//mult		#isolating the units, first billions then millions.....
-		number%=mult			#removing the unit we isolated, from the number
-		if quotient==0:
-			continue
-		if quotient//100!=0:		#if there's a hundred's digit
-			print(sums[quotient//100],end=" ")
-			print("Hundred",end=" ")
-		if quotient%100<=20:		#for 'one' to 'twenty'
-			print(sums[quotient%100],end=" ")
-		else :				#for 'twenty one' to 'ninety nine'
-			print(sums[(quotient%100)-(quotient%10)],end=" ")
-			print(sums[quotient%10],end=" ")
-		
-		print(multipliers[int(mult)],end=" ") #to print billion, million, thousand
+import torch
+import numpy as np
 
-number=int(input("\n\nEnter the number: "))
-if number==0:
-	print("Number in words: zero")
-else :
-	print("Number in words is:",end=" ")
-	wordify(number)
-print("")
-#--------------------------------------------------------------
+from torch.utils.data import Dataset
+from torchvision import datasets
+from torchvision.transforms import ToTensor, Lambda
+import matplotlib.pyplot as plt
+
+training_data = datasets.FashionMNIST(
+    root="data",
+    train=True,
+    download=True,
+    transform=ToTensor()
+)
+test_data = datasets.FashionMNIST(
+    root="data",
+    train=False,
+    download=True,
+    transform=ToTensor()
+)
+ds = datasets.FashionMNIST(
+    root="data",
+    train=True,
+    download=True,
+    transform=ToTensor(),
+    target_transform=Lambda(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
+)
+
+labels_map = {
+    0: "T-Shirt",
+    1: "Trouser",
+    2: "Pullover",
+    3: "Dress",
+    4: "Coat",
+    5: "Sandal",
+    6: "Shirt",
+    7: "Sneaker",
+    8: "Bag",
+    9: "Ankle Boot",
+}
+figure = plt.figure(figsize=(8, 8))
+cols, rows = 3, 3
+for i in range(1, cols * rows + 1):
+    sample_idx = torch.randint(len(training_data), size=(1,)).item()
+    img, label = training_data[sample_idx]
+    figure.add_subplot(rows, cols, i)
+    plt.title(labels_map[label])
+    plt.axis("off")
+    plt.imshow(img.squeeze(), cmap="gray")
+plt.savefig('plt.png')
+
+from torch.utils.data import DataLoader
+
+train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
+test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
+
+# Display image and label.
+train_features, train_labels = next(iter(train_dataloader))
+print(f"Feature batch shape: {train_features.size()}")
+print(f"Labels batch shape: {train_labels.size()}")
+img = train_features[0].squeeze()
+label = train_labels[0]
+plt.imshow(img, cmap="gray")
+plt.savefig('loaded-data.png')
+label_name = list(labels_map.values())[label]
+print(labels_map[int(label)])
+print(f"Label: {label_name}")
